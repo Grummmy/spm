@@ -1,0 +1,234 @@
+{
+  "projects_dir": "/home/gigch/projects",
+  "projects": [
+    {
+      "name": "Project",
+      "version": "0.1.0-alpha",
+      "description": "really cool and fun project which im very exited to work on really!!",
+      "author": "gigch",
+      "license": "MIT",
+      "language": "Python and Golang and something that Veljer invented",
+      "created": "0001-01-01T00:00:00Z",
+      "lastOpened": "0001-01-01T00:00:00Z",
+      "tags": [
+        "cool",
+        "fun",
+        "excited",
+        "exited",
+        "aborted",
+        "absolete"
+      ]
+    },
+    {
+      "name": "spm",
+      "version": "0.1.0-alpha",
+      "author": "gigch",
+      "license": "GPL v3.0",
+      "created": "0001-01-01T00:00:00Z",
+      "lastOpened": "0001-01-01T00:00:00Z"
+    }
+  ],
+  "languages": {
+    "ada": [
+      "adb",
+      "ads"
+    ],
+    "assembly": [
+      "asm",
+      "s"
+    ],
+    "bash": [
+      "sh",
+      "bash",
+      "zsh"
+    ],
+    "brainfuck": [
+      "bf",
+      "b"
+    ],
+    "c": [
+      "c",
+      "h"
+    ],
+    "clojure": [
+      "clj",
+      "cljs",
+      "cljc"
+    ],
+    "cobol": [
+      "cob",
+      "cbl"
+    ],
+    "cpp": [
+      "cpp",
+      "cc",
+      "cxx",
+      "hpp",
+      "hh",
+      "hxx"
+    ],
+    "crystal": [
+      "cr"
+    ],
+    "csharp": [
+      "cs"
+    ],
+    "css": [
+      "css",
+      "scss",
+      "sass"
+    ],
+    "dart": [
+      "dart"
+    ],
+    "delphi": [
+      "pas",
+      "dpr"
+    ],
+    "elixir": [
+      "ex",
+      "exs"
+    ],
+    "erlang": [
+      "erl",
+      "hrl"
+    ],
+    "fortran": [
+      "f",
+      "f90",
+      "f95",
+      "f03"
+    ],
+    "fsharp": [
+      "fs",
+      "fsi",
+      "fsx"
+    ],
+    "go": [
+      "go"
+    ],
+    "groovy": [
+      "groovy"
+    ],
+    "haskell": [
+      "hs"
+    ],
+    "html": [
+      "html",
+      "htm"
+    ],
+    "java": [
+      "java",
+      "class",
+      "jar"
+    ],
+    "javascript": [
+      "js",
+      "mjs",
+      "cjs"
+    ],
+    "julia": [
+      "jl"
+    ],
+    "kotlin": [
+      "kt",
+      "kts"
+    ],
+    "lua": [
+      "lua"
+    ],
+    "matlab": [
+      "m"
+    ],
+    "nim": [
+      "nim"
+    ],
+    "objective-c": [
+      "m",
+      "mm"
+    ],
+    "ocaml": [
+      "ml",
+      "mli"
+    ],
+    "perl": [
+      "pl",
+      "pm"
+    ],
+    "php": [
+      "php",
+      "phtml"
+    ],
+    "powershell": [
+      "ps1",
+      "psm1"
+    ],
+    "prolog": [
+      "pl"
+    ],
+    "python": [
+      "py",
+      "pyw"
+    ],
+    "r": [
+      "r"
+    ],
+    "racket": [
+      "rkt"
+    ],
+    "ruby": [
+      "rb"
+    ],
+    "rust": [
+      "rs"
+    ],
+    "scala": [
+      "scala",
+      "sc"
+    ],
+    "scheme": [
+      "scm",
+      "ss"
+    ],
+    "shell": [
+      "sh"
+    ],
+    "smalltalk": [
+      "st"
+    ],
+    "solidity": [
+      "sol"
+    ],
+    "sql": [
+      "sql"
+    ],
+    "swift": [
+      "swift"
+    ],
+    "typescript": [
+      "ts",
+      "tsx"
+    ],
+    "vala": [
+      "vala",
+      "vapi"
+    ],
+    "verilog": [
+      "v"
+    ],
+    "vhdl": [
+      "vhd",
+      "vhdl"
+    ],
+    "zig": [
+      "zig"
+    ]
+  },
+  "project_defaults": {
+    "version": "0.1.0-alpha",
+    "author": "gigch",
+    "license": "GPL v3.0",
+    "created": "0001-01-01T00:00:00Z",
+    "lastOpened": "0001-01-01T00:00:00Z"
+  }
+}
