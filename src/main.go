@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -45,7 +46,7 @@ func initProject(cla Args) {
 	}
 
 	// <->--- info ------------------------<->
-	fmt.Println("This command will walk you through creating .spm_project.toml file, file describing your project.\nYour project also will be added to main config.toml file.\n\nYou can declare any default values for that utility in config file, in \"project_defaults\".\nIt supports all fields that project has, but only asked values will be applied.\nSome default values are handled differently:\n\n * Tags: default tags will be added to the ones you type when asked.\n\nInstructions:\n - Default values are shown in (parentheses).\n - To add multiple tags, separate them by space.\n - Add - (minus) to delete any previously added tag (or default)\n - Press ^C to leave value empty, default value won't be used\n - Press ^D to exit early, changes won't be applied\n ")
+	fmt.Println("This command will walk you through creating .spm.toml file, file describing your project.\n\nYou can declare any default values for that utility in config file, under \"project_defaults\" property.\nIt supports all fields that project has, however only asked values will be applied.\nSome default values are handled differently:\n\n * Tags: default tags will be added to the ones you type when asked.\n\nInstructions:\n - Default values are shown in (parentheses).\n - To add multiple tags, separate them by space.\n - Add - (minus) to delete any previously added tag (or default)\n - Press ^C to leave value empty, default value won't be used\n - Press ^D to exit early, changes won't be applied\n ")
 	prompt := ""
 
 	// ---- get project name ------------->>
@@ -204,7 +205,7 @@ func initProject(cla Args) {
 	scan = strings.TrimSpace(scan)
 
 	if err != liner.ErrPromptAborted { // leave empty if ^C pressed
-		tags := append(strings.Split(scan, " "), def.Tags...)
+		tags := append(strings.Fields(scan), def.Tags...)
 
 		for i := range tags { // iterate through each tag to apply "-" rules
 			tag := strings.TrimSpace(tags[i])
@@ -233,8 +234,29 @@ func initProject(cla Args) {
 	scan = strings.TrimSpace(strings.ToLower(scan)) // trim + toLower the input
 	if scan == "" || strings.HasPrefix(scan, "y") || strings.HasPrefix(scan, "+") {
 		prj.Created = time.Now()
-		CONFIG.Projects = append(CONFIG.Projects, prj)
+
+		prj.Path, err = os.Getwd()
+		if err != nil { // get wd to know where the project is
+			logger.Error("Could not get wd:", err)
+			return
+		}
+
+		if cla.Mkdir { // if mkdir, then add project name to the path
+			prj.Path = path.Join(prj.Path, prj.Name)
+		}
+
+		// create dir if doesnt exist
+		if err := os.MkdirAll(prj.Path, 0755); err != nil {
+			logger.Error("Could not create directory '"+prj.Path+"':", err)
+			return
+		}
+
+		if err := os.WriteFile(path.Join(prj.Path, ".spm.toml"), data, 0655); err != nil {
+			logger.Error("Could not create file '"+path.Join(prj.Path, ".spm.toml")+"':", err)
+		} else {
+			logger.Debug("Successfully wrote '" + path.Join(prj.Path, ".spm.toml") + "'")
+		}
 	} else {
-		fmt.Println("Project wasn't added.")
+		fmt.Println("Project wasn't created.")
 	}
 }

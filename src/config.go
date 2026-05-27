@@ -12,13 +12,13 @@ var CONFIG Config
 
 type Config struct {
 	ProjectsDir     string              `toml:"projects_dir"`
-	Projects        []Project           `toml:"projects"`
 	Languages       map[string][]string `toml:"languages"`
 	ProjectDefaults Project             `toml:"project_defaults"`
 }
 
 func checkAppDir() {
 	if os.Getenv("SPM_RUN_PORTABLE") != "" {
+		logger.Debug("Running in portable mode")
 		APPDIR = exeDir()
 	} else if dir, err := os.UserConfigDir(); err != nil {
 		logger.Error("Failed to get user config dir:", err)

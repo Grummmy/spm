@@ -7,7 +7,6 @@ import (
 )
 
 var DEFAULT_CONFIG Config = Config{
-	Projects: []Project{},
 	Languages: map[string][]string{
 		"ada":         {"adb", "ads"},
 		"assembly":    {"asm", "s"},
