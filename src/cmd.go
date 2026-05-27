@@ -14,6 +14,7 @@ type Args struct {
 	Lang         string
 	Tags         []string
 	Path         string
+	Mkdir        bool
 	Sort         string
 	Des          bool
 	CountLines   bool
@@ -21,7 +22,7 @@ type Args struct {
 	Reason       string
 	Confirm      bool
 	Permanent    bool
-	Type         string
+	Action       string
 	New          string
 }
 
@@ -53,19 +54,20 @@ func _getArgs() Args {
 	lang := fs.StringP("lang", "l", "", "programming language that project mainly relies on")
 	tags := fs.StringSliceP("tag", "t", nil, "project tags")
 	path := fs.StringP("path", "p", "", "project directory path")
+	mkdir := fs.BoolP("mkdir", "m", false, "whether to create new dir for a project or use currnet")
 	confirm := fs.BoolP("confirm", "y", false, "skip confirmation prompts, always accept")
 	permanent := fs.BoolP("permanent", "P", false, "delete project permanently, instead of compressing and moving to spm trash")
 	sort := fs.StringP("sort", "s", "opened", "sort projects by: date (creation date), lang, opened (last opened)")
 	des := fs.Bool("des", false, "change sorting order to descending (default asceding)")
 	countLines := fs.BoolP("lines", "L", false, "count lang use statistics by lines instead of characters")
 	noExceptions := fs.BoolP("no-exceptions", "N", false, "dont exclude non source code files when counting lang statistics")
-	type_ := fs.StringP("type", "T", "all", "log type to be listed: delete, create, all")
+	action := fs.StringP("action", "a", "all", "actions to be listed: delete, create, all")
 
 	fs.Parse(os.Args[2:])
 
-	cla.Lang, cla.Tags, cla.Path, cla.Confirm = *lang, *tags, *path, *confirm
-	cla.Permanent, cla.Sort, cla.Des = *permanent, *sort, *des
-	cla.CountLines, cla.NoExceptions, cla.Type = *countLines, *noExceptions, *type_
+	cla.Lang, cla.Tags, cla.Path, cla.Mkdir = *lang, *tags, *path, *mkdir
+	cla.Confirm, cla.Permanent, cla.Sort, cla.Des = *confirm, *permanent, *sort, *des
+	cla.CountLines, cla.NoExceptions, cla.Action = *countLines, *noExceptions, *action
 
 	args := fs.Args()
 	if len(args) > 1 {
@@ -98,6 +100,7 @@ func getArgs() Args {
 		lang := fs.StringP("lang", "l", "", "programming language that project mainly relies on")
 		tags := fs.StringSliceP("tag", "t", nil, "project tags")
 		path := fs.StringP("path", "p", "", "project directory path")
+		mkdir := fs.BoolP("mkdir", "m", false, "whether to create new dir for a project or use currnet")
 		fs.Parse(os.Args[2:])
 
 		args := fs.Args()
@@ -105,7 +108,7 @@ func getArgs() Args {
 			cla.Name = args[0]
 		}
 
-		cla.Lang, cla.Tags, cla.Path = *lang, *tags, *path
+		cla.Lang, cla.Tags, cla.Path, cla.Mkdir = *lang, *tags, *path, *mkdir
 
 	case "list":
 		fs := flag.NewFlagSet("list", flag.ExitOnError)
@@ -149,10 +152,10 @@ func getArgs() Args {
 			fmt.Println("Usage: spm history [options]")
 			fs.PrintDefaults()
 		}
-		type_ := fs.StringP("type", "T", "all", "log type to be listed: delete, create, all")
+		action := fs.StringP("action", "a", "all", "action to be listed: delete, create, all")
 		fs.Parse(os.Args[2:])
 
-		cla.Type = *type_
+		cla.Action = *action
 
 	case "info":
 		fs := flag.NewFlagSet(sub, flag.ExitOnError)

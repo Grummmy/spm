@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/peterh/liner"
 )
 
-var loglevel string = "info"
+var loglevel string = "debug"
 
 func init() {
 	logger.logLevel = logLevelFromString(loglevel)
@@ -23,47 +24,11 @@ func main() {
 	cla := getArgs()
 
 	switch cla.Command {
-	case "new":
-		newProject(cla)
 	case "init":
 		initProject(cla)
 	}
 
 	updateConfig(CONFIG)
-}
-
-func newProject(cla Args) {
-	if cla.Name == "" { // exit if no name was passed
-		fmt.Println("Not enough arguments. Name is required to use 'spm new <name> [description]'")
-	}
-	prj := Project{ // basic project configuration
-		Name:        cla.Name,
-		Description: cla.Description,
-		Lang:        cla.Lang,
-		Created:     time.Now(),
-		Tags:        cla.Tags,
-	}
-
-	if CONFIG.ProjectsDir != "" { // try to create project folder if ProjectsDir is set
-		prj.Path = filepath.Join(CONFIG.ProjectsDir, prj.Name)
-		if err := os.Mkdir(APPDIR, 0755); err != nil && !os.IsExist(err) {
-			logger.Error("Failed to create directory for '"+prj.Name+"':", err)
-		}
-	} else {
-		logger.Warn("Could not create directory for '" + prj.Name + "', because projects_dir is not defined in config")
-	}
-
-	if CONFIG.ProjectDefaults.Author != "" { // try applying default author
-		prj.Author = CONFIG.ProjectDefaults.Author
-	}
-	if CONFIG.ProjectDefaults.License != "" { // try applying default license
-		prj.License = CONFIG.ProjectDefaults.License
-	}
-	if CONFIG.ProjectDefaults.Version != "" { // try applying default version
-		prj.Version = CONFIG.ProjectDefaults.Version
-	}
-
-	CONFIG.Projects = append(CONFIG.Projects, prj)
 }
 
 func initProject(cla Args) {
@@ -80,22 +45,23 @@ func initProject(cla Args) {
 	}
 
 	// <->--- info ------------------------<->
-	fmt.Println("This command will walk you through creating .spm_project.toml file, file describing your project.\nYour project also will be added to main config.toml file.\n\nYou can declare any default values for that utility in config file, in \"project_defaults\".\nIt supports all fields that project has, but only asked values will be applied.\nSome default values are handled differently:\n\n * Tags: default tags will be added to the ones you type when asked.\n\nInstructions:\n - Default values are shown in (parentheses).\n - To add multiple tags, separate them by space.\n - Press ^C to leave value empty, default value won't be used\n - Press ^D to exit early, changes won't be applied\n ")
+	fmt.Println("This command will walk you through creating .spm_project.toml file, file describing your project.\nYour project also will be added to main config.toml file.\n\nYou can declare any default values for that utility in config file, in \"project_defaults\".\nIt supports all fields that project has, but only asked values will be applied.\nSome default values are handled differently:\n\n * Tags: default tags will be added to the ones you type when asked.\n\nInstructions:\n - Default values are shown in (parentheses).\n - To add multiple tags, separate them by space.\n - Add - (minus) to delete any previously added tag (or default)\n - Press ^C to leave value empty, default value won't be used\n - Press ^D to exit early, changes won't be applied\n ")
+	prompt := ""
 
 	// ---- get project name ------------->>
 	for {
 		if cla.Name != "" { // if name was passed as argument when calling 'spm init'
-			fmt.Print("Project name (" + cla.Name + "): ")
+			prompt = "Project name (" + cla.Name + "): "
 			def.Name = cla.Name
 		} else if cwd != "" { // if no name was passed, but cwd is available
-			fmt.Print("Project name (" + filepath.Base(cwd) + "): ")
+			prompt = "Project name (" + filepath.Base(cwd) + "): "
 			def.Name = filepath.Base(cwd)
 		} else if def.Name != "" { // if cwd isnt available, but default name is set in config
-			fmt.Print("Project name (" + def.Name + "): ")
+			prompt = "Project name (" + def.Name + "): "
 		} else { // if nothing above worked, just ask the name
-			fmt.Print("Project name: ")
+			prompt = "Project name: "
 		}
-		scan, err := (line.Prompt(""))
+		scan, err := line.Prompt(prompt)
 		if err != nil && err != liner.ErrPromptAborted {
 			fmt.Println("\nAborting.")
 			return
@@ -105,7 +71,7 @@ func initProject(cla Args) {
 		if scan != "" && testFilename(scan) { // typed name has priority over defautl and passed in args
 			prj.Name = scan
 			break
-		} else if def.Name != "" && err != liner.ErrPromptAborted && testFilename(scan) { // if default value is set, but not ^C pressed - name cant be empty
+		} else if def.Name != "" && err != liner.ErrPromptAborted && testFilename(def.Name) { // if default value is set, but not ^C pressed - name cant be empty
 			prj.Name = def.Name
 			break
 		} else {
@@ -116,11 +82,11 @@ func initProject(cla Args) {
 
 	// ---- get version ------------------>>
 	if def.Version != "" { // if default version is set
-		fmt.Print("Version (" + def.Version + "): ")
+		prompt = "Version (" + def.Version + "): "
 	} else {
-		fmt.Print("Version: ")
+		prompt = "Version: "
 	}
-	scan, err := line.Prompt("")
+	scan, err := line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
 		return
@@ -138,11 +104,11 @@ func initProject(cla Args) {
 
 	// ---- get project description ------>>
 	if def.Description != "" { // if default description is set in config
-		fmt.Print("Description (default desc.): ")
+		prompt = "Description (default desc.): "
 	} else {
-		fmt.Print("Description: ")
+		prompt = "Description: "
 	}
-	scan, err = line.Prompt("")
+	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
 		return
@@ -160,11 +126,11 @@ func initProject(cla Args) {
 
 	// ---- get project author ----------->>
 	if def.Author != "" { // if default author is set
-		fmt.Print("Author (" + def.Author + "): ")
+		prompt = "Author (" + def.Author + "): "
 	} else {
-		fmt.Print("Author: ")
+		prompt = "Author: "
 	}
-	scan, err = line.Prompt("")
+	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
 		return
@@ -182,11 +148,11 @@ func initProject(cla Args) {
 
 	// ---- get project license ---------->>
 	if def.License != "" { // if default license is set
-		fmt.Print("License (" + def.License + "): ")
+		prompt = "License (" + def.License + "): "
 	} else {
-		fmt.Print("License: ")
+		prompt = "License: "
 	}
-	scan, err = line.Prompt("")
+	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
 		return
@@ -204,11 +170,11 @@ func initProject(cla Args) {
 
 	// ---- get project lang ------------->>
 	if def.Lang != "" { // if default lang is set in config
-		fmt.Print("Programming Language(" + def.Lang + "): ")
+		prompt = "Programming Language(" + def.Lang + "): "
 	} else {
-		fmt.Print("Programming language: ")
+		prompt = "Programming language: "
 	}
-	scan, err = line.Prompt("")
+	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
 		return
@@ -226,11 +192,11 @@ func initProject(cla Args) {
 
 	// ---- get tags --------------------->>
 	if len(def.Tags) != 0 { // if there are any tags in defaults
-		fmt.Print("Tags (" + strings.Join(def.Tags, " ") + "): ")
+		prompt = "Tags (" + strings.Join(def.Tags, " ") + "): "
 	} else {
-		fmt.Print("Tags: ")
+		prompt = "Tags: "
 	}
-	scan, err = line.Prompt("")
+	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
 		return
@@ -238,11 +204,20 @@ func initProject(cla Args) {
 	scan = strings.TrimSpace(scan)
 
 	if err != liner.ErrPromptAborted { // leave empty if ^C pressed
-		if scan != "" { // default tags are added to typed tags
-			prj.Tags = append(strings.Split(scan, " "), def.Tags...)
-		} else { // if no typed tags were added, default are used
-			prj.Tags = def.Tags
+		tags := append(strings.Split(scan, " "), def.Tags...)
+
+		for i := range tags { // iterate through each tag to apply "-" rules
+			tag := strings.TrimSpace(tags[i])
+			index := slices.Index(prj.Tags, tag[1:])
+
+			// if tag starts with -, and it was added to tags earlier, than remove it
+			if strings.HasPrefix(tag, "-") && index != -1 {
+				prj.Tags = append(prj.Tags[:index], prj.Tags[index+1:]...)
+			} else if !strings.HasPrefix(tag, "-") {
+				prj.Tags = append(prj.Tags, tag)
+			}
 		}
+		logger.Debug("Tags:", strings.Join(prj.Tags, " "))
 	}
 	// <<-- get tags -----------------------
 
@@ -251,10 +226,10 @@ func initProject(cla Args) {
 	if err != nil {
 		logger.Error("Failed to marshal config:", err)
 	} else {
-		fmt.Println(string(data))
+		fmt.Println(string(data) + "\n")
 	}
 
-	scan, _ = line.Prompt("\nIs this OK? (yes) ")
+	scan, _ = line.Prompt("Is this OK? (yes) ")
 	scan = strings.TrimSpace(strings.ToLower(scan)) // trim + toLower the input
 	if scan == "" || strings.HasPrefix(scan, "y") || strings.HasPrefix(scan, "+") {
 		prj.Created = time.Now()
