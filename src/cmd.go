@@ -32,7 +32,6 @@ Usage:
 
 Commands:
 	init [name]               Initialize new project.
-	new <name> [description]  Create a new project and register it.
 	list                      List all tracked projects.
 	delete <name> [reason]    Delete a project (moves it to trash by default).
 	open <name>               Open a project in the default editor.
@@ -96,32 +95,13 @@ func getArgs() Args {
 			fmt.Println("Usage: spm init [name]")
 			fs.PrintDefaults()
 		}
-		// lang := fs.StringP("lang", "l", "", "programming language that project mainly relies on")
-		// tags := fs.StringSliceP("tag", "t", nil, "project tags")
-		fs.Parse(os.Args[2:])
-
-		args := fs.Args()
-		if len(args) >= 1 {
-			cla.Name = args[0]
-		}
-
-	case "new":
-		fs := flag.NewFlagSet("new", flag.ExitOnError)
-		fs.Usage = func() {
-			fmt.Println("Create a new project and register it.")
-			fmt.Println("Usage: spm new <name> [description] [options]")
-			fs.PrintDefaults()
-		}
 		lang := fs.StringP("lang", "l", "", "programming language that project mainly relies on")
 		tags := fs.StringSliceP("tag", "t", nil, "project tags")
 		path := fs.StringP("path", "p", "", "project directory path")
 		fs.Parse(os.Args[2:])
 
 		args := fs.Args()
-		if len(args) > 1 {
-			cla.Name = args[0]
-			cla.Description = args[1]
-		} else if len(args) == 1 {
+		if len(args) >= 1 {
 			cla.Name = args[0]
 		}
 

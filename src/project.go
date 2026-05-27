@@ -5,15 +5,15 @@ import (
 )
 
 type Project struct {
-	Name        string    `json:"name,omitempty"`
-	Version     string    `json:"version,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Author      string    `json:"author,omitempty"`
-	License     string    `json:"license,omitempty"`
-	Path        string    `json:"path,omitempty"`
-	Lang        string    `json:"language,omitempty"`
-	Created     time.Time `json:"created,omitempty"`
-	LastOpened  time.Time `json:"lastOpened,omitempty"`
-	Tags        []string  `json:"tags,omitempty"`
-	Favorite    bool      `json:"favorite,omitempty"`
+	Name        string    `toml:"name,omitempty"`
+	Version     string    `toml:"version,omitempty"`
+	Description string    `toml:"description,omitempty"`
+	Author      string    `toml:"author,omitempty"`
+	License     string    `toml:"license,omitempty"`
+	Path        string    `toml:"path,omitempty"`
+	Lang        string    `toml:"language,omitempty"`
+	Created     time.Time `toml:"created,omitempty"`
+	LastOpened  time.Time `toml:"lastOpened,omitempty"`
+	Tags        []string  `toml:"tags,omitempty"`
+	Favorite    bool      `toml:"favorite,omitempty"`
 }

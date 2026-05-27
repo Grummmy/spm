@@ -1,17 +1,21 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/peterh/liner"
 )
 
+var loglevel string = "info"
+
 func init() {
+	logger.logLevel = logLevelFromString(loglevel)
+
 	checkAppDir()
 }
 
@@ -76,7 +80,7 @@ func initProject(cla Args) {
 	}
 
 	// <->--- info ------------------------<->
-	fmt.Println("This command will walk you through creating .spm_project.json file, file describing your project.\nYour project also will be added to main config.json file.\n\nYou can declare any default values for that utility in config file, in \"project_defaults\".\nIt supports all fields that project has, but only asked values will be applied.\nSome default values are handled differently:\n\n * Tags: default tags will be added to the ones you type when asked.\n\nInstructions:\n - Default values are shown in (parentheses).\n - To add multiple tags, separate them by space.\n - Press ^C to leave value empty, default value won't be used\n - Press ^D to exit early, changes won't be applied\n ")
+	fmt.Println("This command will walk you through creating .spm_project.toml file, file describing your project.\nYour project also will be added to main config.toml file.\n\nYou can declare any default values for that utility in config file, in \"project_defaults\".\nIt supports all fields that project has, but only asked values will be applied.\nSome default values are handled differently:\n\n * Tags: default tags will be added to the ones you type when asked.\n\nInstructions:\n - Default values are shown in (parentheses).\n - To add multiple tags, separate them by space.\n - Press ^C to leave value empty, default value won't be used\n - Press ^D to exit early, changes won't be applied\n ")
 
 	// ---- get project name ------------->>
 	for {
@@ -242,8 +246,8 @@ func initProject(cla Args) {
 	}
 	// <<-- get tags -----------------------
 
-	fmt.Println("\nAbout to write to " + filepath.Join(cwd, ".spm.json") + ":")
-	data, err := json.MarshalIndent(prj, "", "  ")
+	fmt.Println("\nAbout to write to " + filepath.Join(cwd, ".spm.toml") + ":")
+	data, err := toml.Marshal(prj)
 	if err != nil {
 		logger.Error("Failed to marshal config:", err)
 	} else {

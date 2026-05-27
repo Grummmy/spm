@@ -1,19 +1,20 @@
 package main
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
+
+	"github.com/BurntSushi/toml"
 )
 
 var APPDIR string
 var CONFIG Config
 
 type Config struct {
-	ProjectsDir     string              `json:"projects_dir"`
-	Projects        []Project           `json:"projects"`
-	Languages       map[string][]string `json:"languages"`
-	ProjectDefaults Project             `json:"project_defaults"`
+	ProjectsDir     string              `toml:"projects_dir"`
+	Projects        []Project           `toml:"projects"`
+	Languages       map[string][]string `toml:"languages"`
+	ProjectDefaults Project             `toml:"project_defaults"`
 }
 
 func checkAppDir() {
@@ -23,13 +24,13 @@ func checkAppDir() {
 		logger.Error("Failed to get user config dir:", err)
 		APPDIR = exeDir()
 	} else {
-		APPDIR = filepath.Join(dir, "SiPM")
+		APPDIR = filepath.Join(dir, "spm")
 		if err := os.Mkdir(APPDIR, 0755); err != nil && !os.IsExist(err) {
 			logger.Error("Failed to create app directory ("+APPDIR+"):", err)
 		}
 	}
 
-	configPath := filepath.Join(APPDIR, "config.json")
+	configPath := filepath.Join(APPDIR, "config.toml")
 	if fileExists(configPath) {
 		bs, err := os.ReadFile(configPath)
 		if err != nil {
@@ -37,7 +38,7 @@ func checkAppDir() {
 			os.Exit(1)
 		}
 
-		err = json.Unmarshal(bs, &CONFIG)
+		err = toml.Unmarshal(bs, &CONFIG)
 		if err != nil {
 			logger.Error("Failed to parse config ("+configPath+"):", err)
 			os.Exit(1)
@@ -52,13 +53,13 @@ func checkAppDir() {
 }
 
 func updateConfig(new Config) {
-	data, err := json.MarshalIndent(new, "", "  ")
+	data, err := toml.Marshal(new)
 	if err != nil {
 		logger.Error("Failed to marshal config:", err)
 		return
 	}
 
-	configPath := filepath.Join(APPDIR, "config.json")
+	configPath := filepath.Join(APPDIR, "config.toml")
 	err = os.WriteFile(configPath, data, 0755)
 	if err != nil {
 		logger.Error("Failed to write config ("+configPath+"):", err)
