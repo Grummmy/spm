@@ -1,9 +1,7 @@
 package main
 
 import (
-	"os"
 	"os/user"
-	"path/filepath"
 )
 
 var DEFAULT_CONFIG Config = Config{
@@ -67,11 +65,9 @@ var DEFAULT_CONFIG Config = Config{
 }
 
 func fillDefaultConfig(cfg *Config) {
-	if dir, err := os.UserHomeDir(); err == nil {
-		cfg.ProjectsDir = filepath.Join(dir, "projects")
-		logger.Info("'" + cfg.ProjectsDir + "' was chosen as projects' directory")
-	} else {
-		logger.Error("Failed to get home directory:", err)
+	cfg.ProjectsDir = guessProjectsDir()
+	if cfg.ProjectsDir != "" {
+		logger.Info("Guessed project directory to be '" + cfg.ProjectsDir + "'")
 	}
 
 	if usr, err := user.Current(); err == nil {

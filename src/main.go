@@ -207,8 +207,8 @@ func initProject(cla Args) {
 	if err != liner.ErrPromptAborted { // leave empty if ^C pressed
 		tags := append(strings.Fields(scan), def.Tags...)
 
-		for i := range tags { // iterate through each tag to apply "-" rules
-			tag := strings.TrimSpace(tags[i])
+		for _, tag := range tags { // iterate through each tag to apply "-" rules
+			tag = strings.TrimSpace(tag)
 			index := slices.Index(prj.Tags, tag[1:])
 
 			// if tag starts with -, and it was added to tags earlier, than remove it

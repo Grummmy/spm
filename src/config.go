@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
@@ -74,4 +75,31 @@ func exeDir() string {
 	}
 
 	return filepath.Dir(exe)
+}
+
+func guessProjectsDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		logger.Warn("Could not get home dir to guess projects dir (canceling):", err)
+		return ""
+	}
+
+	files, err := os.ReadDir(home)
+	if err != nil {
+		logger.Warn("Could not read home dir (cancleing project dir guess):", err)
+		return ""
+	}
+
+	for _, f := range files {
+		if !f.IsDir() {
+			continue
+		}
+
+		if n := strings.ToLower(f.Name()); n == "projects" || n == "prjs" || n == "project" || n == "prj" {
+			return filepath.Join(home, f.Name())
+		}
+	}
+
+	logger.Warn("Could not guess projects dir, please set it manually in config.")
+	return ""
 }
