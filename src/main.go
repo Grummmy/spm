@@ -225,14 +225,14 @@ func initProject(cla Args) {
 	fmt.Println("\nAbout to write to " + filepath.Join(cwd, ".spm.toml") + ":")
 	data, err := toml.Marshal(prj)
 	if err != nil {
-		logger.Error("Failed to marshal config:", err)
+		logger.Error("Failed to marshal project:", err)
 	} else {
 		fmt.Println(string(data) + "\n")
 	}
 
-	scan, _ = line.Prompt("Is this OK? (yes) ")
+	scan, err = line.Prompt("Is this OK? (yes) ")
 	scan = strings.TrimSpace(strings.ToLower(scan)) // trim + toLower the input
-	if scan == "" || strings.HasPrefix(scan, "y") || strings.HasPrefix(scan, "+") {
+	if err == nil && (scan == "" || strings.HasPrefix(scan, "y") || strings.HasPrefix(scan, "+")) {
 		prj.Created = time.Now()
 
 		prj.Path, err = os.Getwd()

@@ -42,48 +42,10 @@ Commands:
 
 Run 'spm <command> -h' to get detailed help for each command.`
 
-func _getArgs() Args {
-	if len(os.Args) < 2 {
-		fmt.Println(helpMessage)
-		os.Exit(1)
-	}
-
-	cla := Args{Command: os.Args[1]}
-
-	fs := flag.NewFlagSet("spm", flag.ExitOnError)
-	lang := fs.StringP("lang", "l", "", "programming language that project mainly relies on")
-	tags := fs.StringSliceP("tag", "t", nil, "project tags")
-	path := fs.StringP("path", "p", "", "project directory path")
-	mkdir := fs.BoolP("mkdir", "m", false, "whether to create new dir for a project or use currnet")
-	confirm := fs.BoolP("confirm", "y", false, "skip confirmation prompts, always accept")
-	permanent := fs.BoolP("permanent", "P", false, "delete project permanently, instead of compressing and moving to spm trash")
-	sort := fs.StringP("sort", "s", "opened", "sort projects by: date (creation date), lang, opened (last opened)")
-	des := fs.Bool("des", false, "change sorting order to descending (default asceding)")
-	countLines := fs.BoolP("lines", "L", false, "count lang use statistics by lines instead of characters")
-	noExceptions := fs.BoolP("no-exceptions", "N", false, "dont exclude non source code files when counting lang statistics")
-	action := fs.StringP("action", "a", "all", "actions to be listed: delete, create, all")
-
-	fs.Parse(os.Args[2:])
-
-	cla.Lang, cla.Tags, cla.Path, cla.Mkdir = *lang, *tags, *path, *mkdir
-	cla.Confirm, cla.Permanent, cla.Sort, cla.Des = *confirm, *permanent, *sort, *des
-	cla.CountLines, cla.NoExceptions, cla.Action = *countLines, *noExceptions, *action
-
-	args := fs.Args()
-	if len(args) > 1 {
-		cla.Name = args[0]
-		cla.Description = args[1]
-	} else if len(args) == 1 {
-		cla.Name = args[0]
-	}
-
-	return cla
-}
-
 func getArgs() Args {
 	if len(os.Args) < 2 {
 		fmt.Println(helpMessage)
-		os.Exit(1)
+		os.Exit(2)
 	}
 
 	cla := Args{Command: os.Args[1]}
@@ -91,113 +53,106 @@ func getArgs() Args {
 
 	switch sub {
 	case "init":
-		fs := flag.NewFlagSet("new", flag.ExitOnError)
-		fs.Usage = func() {
+		flag.Usage = func() {
 			fmt.Println("Initialize new project and create .spm_project.json file.")
 			fmt.Println("Usage: spm init [name]")
-			fs.PrintDefaults()
+			flag.PrintDefaults()
 		}
-		lang := fs.StringP("lang", "l", "", "programming language that project mainly relies on")
-		tags := fs.StringSliceP("tag", "t", nil, "project tags")
-		path := fs.StringP("path", "p", "", "project directory path")
-		mkdir := fs.BoolP("mkdir", "m", false, "whether to create new dir for a project or use currnet")
-		fs.Parse(os.Args[2:])
+		lang := flag.StringP("lang", "l", "", "programming language that project mainly relies on")
+		tags := flag.StringSliceP("tag", "t", nil, "project tags")
+		path := flag.StringP("path", "p", "", "project directory path")
+		mkdir := flag.BoolP("mkdir", "m", false, "whether to create new dir for a project or use currnet")
+		flag.Parse()
 
-		args := fs.Args()
-		if len(args) >= 1 {
-			cla.Name = args[0]
+		args := flag.Args()
+		if len(args) >= 2 { // skip first one, because its a subcommand
+			cla.Name = args[1]
 		}
 
 		cla.Lang, cla.Tags, cla.Path, cla.Mkdir = *lang, *tags, *path, *mkdir
 
 	case "list":
-		fs := flag.NewFlagSet("list", flag.ExitOnError)
-		fs.Usage = func() {
+		flag.Usage = func() {
 			fmt.Println("List all tracked projects.")
 			fmt.Println("Usage: spm list [options]")
-			fs.PrintDefaults()
+			flag.PrintDefaults()
 		}
-		sort := fs.StringP("sort", "s", "opened", "sort projects by: date (creation date), lang, opened (last opened)")
-		des := fs.Bool("des", false, "change sorting order to descending (default ascending)")
-		countLines := fs.BoolP("lines", "L", false, "count lang use statistics by lines instead of characters")
-		noExceptions := fs.BoolP("no-exceptions", "N", false, "dont exclude non-source code files when counting lang statistics")
-		fs.Parse(os.Args[2:])
+		sort := flag.StringP("sort", "s", "opened", "sort projects by: date (creation date), lang, opened (last opened)")
+		des := flag.Bool("des", false, "change sorting order to descending (default ascending)")
+		countLines := flag.BoolP("lines", "L", false, "count lang use statistics by lines instead of characters")
+		noExceptions := flag.BoolP("no-exceptions", "N", false, "dont exclude non-source code files when counting lang statistics")
+		flag.Parse()
 
 		cla.Sort, cla.Des, cla.CountLines, cla.NoExceptions = *sort, *des, *countLines, *noExceptions
 
 	case "delete":
-		fs := flag.NewFlagSet("delete", flag.ExitOnError)
-		fs.Usage = func() {
+		flag.Usage = func() {
 			fmt.Println("Delete a project (moves it to trash by default).")
 			fmt.Println("Usage: spm delete <name> [reason] [options]")
-			fs.PrintDefaults()
+			flag.PrintDefaults()
 		}
-		confirm := fs.BoolP("confirm", "y", false, "skip confirmation prompts, always accept")
-		permanent := fs.BoolP("permanent", "P", false, "delete project permanently, instead of compressing and moving to spm trash")
-		fs.Parse(os.Args[2:])
+		confirm := flag.BoolP("confirm", "y", false, "skip confirmation prompts, always accept")
+		permanent := flag.BoolP("permanent", "P", false, "delete project permanently, instead of compressing and moving to spm trash")
+		flag.Parse()
 
-		args := fs.Args()
-		if len(args) > 1 {
-			cla.Name = args[0]
-			cla.Reason = args[1]
-		} else if len(args) == 1 {
-			cla.Name = args[0]
+		args := flag.Args()
+		if len(args) > 2 { // skip first one, because its a subcommand
+			cla.Name = args[1]
+			cla.Reason = args[2]
+		} else if len(args) == 2 {
+			cla.Name = args[1]
 		}
 		cla.Confirm, cla.Permanent = *confirm, *permanent
 
 	case "history":
-		fs := flag.NewFlagSet("history", flag.ExitOnError)
-		fs.Usage = func() {
+		flag.Usage = func() {
 			fmt.Println("Show project creation and deletion history.")
 			fmt.Println("Usage: spm history [options]")
-			fs.PrintDefaults()
+			flag.PrintDefaults()
 		}
-		action := fs.StringP("action", "a", "all", "action to be listed: delete, create, all")
-		fs.Parse(os.Args[2:])
+		action := flag.StringP("action", "a", "all", "action to be listed: delete, create, all")
+		flag.Parse()
 
 		cla.Action = *action
 
 	case "info":
-		fs := flag.NewFlagSet(sub, flag.ExitOnError)
-		fs.Usage = func() {
+		flag.Usage = func() {
 			fmt.Println("Show detailed information about the project.")
 			fmt.Println("Usage: spm info <name>")
-			fs.PrintDefaults()
+			flag.PrintDefaults()
 		}
-		fs.Parse(os.Args[2:])
+		flag.Parse()
 
-		args := fs.Args()
-		if len(args) >= 1 {
-			cla.Name = args[0]
+		args := flag.Args()
+		if len(args) >= 2 { // skip first one, because its a subcommand
+			cla.Name = args[1]
 		}
 
 	case "open":
-		fs := flag.NewFlagSet(sub, flag.ExitOnError)
-		fs.Usage = func() {
+		flag.Usage = func() {
 			fmt.Println("Open code editor and new terminal with project directory.")
 			fmt.Println("Usage: spm open <name>")
-			fs.PrintDefaults()
+			flag.PrintDefaults()
 		}
-		fs.Parse(os.Args[2:])
+		flag.Parse()
 
-		args := fs.Args()
-		if len(args) >= 1 {
-			cla.Name = args[0]
+		args := flag.Args()
+		if len(args) >= 2 { // skip first one, because its a subcommand
+			cla.Name = args[1]
 		}
 
 	case "rename":
-		fs := flag.NewFlagSet("rename", flag.ExitOnError)
-		fs.Usage = func() {
+		flag.Usage = func() {
 			fmt.Println("Rename a project.")
 			fmt.Println("Usage: spm rename <old> <new>")
-			fs.PrintDefaults()
+			flag.PrintDefaults()
 		}
-		fs.Parse(os.Args[2:])
+		flag.Parse()
 
-		args := fs.Args()
-		if len(args) >= 2 {
-			cla.Name = args[0]
-			cla.New = args[1]
+		args := flag.Args()
+		if len(args) >= 3 { // skip first one, because its a subcommand
+			cla.Name = args[1]
+			cla.New = args[2]
 		}
 
 	default:
