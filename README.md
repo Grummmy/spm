@@ -16,10 +16,22 @@ I always struggled with convenient project names and project placement. If I wan
 - Other ideas accepted!
 
 ## Usage
-When you first run the executable, it will try to find your default projects directory. It looks for paths like `~/Projects` (any case: `projects`, `PrOjEcTs` etc). If project dir wasnt guessed, the program will prompt you to choose it. Then, spm creates default config. It includes your user name as default author, default license, initial version, and a bunch of default language extentions mapped to language names and colors.
-On Linux, config dir is `$XDG_CONFIG_HOME/spm/` (most likely `~/.config/spm/config.toml`). On Darwin it is `$HOME/Library/Application Support/spm/` and for Windows it is `%AppData%/spm/`. If `SPM_RUN_PORTABLE` environment variable is set (anithing except `""`), than executable dir is used as config directory.
+When you first run the executable, it will try to find your default projects directory. It looks for paths like `~/Projects` (any case: `projects`, `PrOjEcTs` etc). If project dir wasnt guessed, the program will prompt you to choose it. Then, spm creates default config. It includes your user name as default author, default license (`GPL v3.0`), initial version (`0.1.0-alpha`), and a bunch of default language extentions mapped to language names and colors.
+
+On Linux, config dir is `$XDG_CONFIG_HOME/spm/` (most likely `~/.config/spm/config.toml`). On Darwin (MacOs) it is `$HOME/Library/Application Support/spm/`, and for Windows it is `%AppData%/spm/`. If `SPM_RUN_PORTABLE` environment variable is set (anithing except ` `, not blank), than executable dir is used as config directory.
 
 #### Create project
 ```bash
-spm init [name]
+spm init
+```
+
+You will be prompted several questions like project name, description, tags etc for your new porject. At the end, it will print settings it collect and ask if these are okay. If you proceed, `.spm.toml` file will be created where you ran the command.
+
+If you are running the command inside you projects directory (`~/Projects`), you probably would want to create a new directory for you project, and then run `spm init` in it. And I've got you covered, saving you 2 commands! Just run `spm init -m`, and spm will init your project in a new directory.
+
+
+#### List projects
+
+```bash
+spm list
 ```
