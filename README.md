@@ -49,7 +49,7 @@ Spm will go through your projects folder and parse through found `.spm.toml`. It
   - [ ] base functionality
   - [ ] short form
   - [ ] long form
-  - [ ] format option (like in `date +`)
+  - [ ] format option (like in `date +%Y/%d/%m`)
   - [ ] language stats
     - [ ] ignore special non-source code dirs, like deps (`node_modules` etc)
     - [ ] exclude configs (.json, .toml, .ini etc)
@@ -73,3 +73,5 @@ Spm will go through your projects folder and parse through found `.spm.toml`. It
     - [ ] ps1 function
 - [ ] spm run
   - [ ] base functionality
+- [ ] misc
+  - [ ] create projects under tag directories

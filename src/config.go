@@ -12,6 +12,7 @@ var APPDIR string
 var CONFIG Config
 
 type Config struct {
+	Path            string
 	ProjectsDir     string              `toml:"projects_dir"`
 	Languages       map[string][]string `toml:"languages"`
 	ProjectDefaults Project             `toml:"project_defaults"`
@@ -44,6 +45,7 @@ func checkAppDir() {
 			logger.Error("Failed to parse config ("+configPath+"):", err)
 			os.Exit(1)
 		}
+		CONFIG.Path = configPath
 	} else {
 		logger.Info("No config found, creating new one with default values.")
 		fillDefaultConfig(&DEFAULT_CONFIG)

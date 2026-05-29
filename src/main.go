@@ -26,7 +26,17 @@ func main() {
 
 	switch cla.Command {
 	case "init":
+		if CONFIG.ProjectsDir == "" {
+			logger.Fatal("You cant use init without projects dir specified in config.")
+			break
+		}
 		initProject(cla)
+	case "info":
+		if CONFIG.ProjectsDir == "" {
+			logger.Fatal("You cant use info without projects dir specified in config.")
+			break
+		}
+		projectInfo(cla)
 	}
 
 	updateConfig(CONFIG)
@@ -258,5 +268,72 @@ func initProject(cla Args) {
 		}
 	} else {
 		fmt.Println("Project wasn't created.")
+	}
+}
+
+func projectInfo(cla Args) {
+	// get files from project dir
+	files, err := os.ReadDir(CONFIG.ProjectsDir)
+	if err != nil {
+		logger.Error("Could not read projects dir:", err)
+		return
+	}
+
+	// check if there is a folder with project name in projects dir
+	if !slices.ContainsFunc(files, func(e os.DirEntry) bool { return e.IsDir() && e.Name() == cla.Name }) || os.IsNotExist(err) {
+		fmt.Println("No project named '" + cla.Name + "' found in '" + CONFIG.ProjectsDir + "/'.")
+		return
+	}
+
+	// check if project folder has spm file and is actual spm project
+	spmFile := path.Join(CONFIG.ProjectsDir, cla.Name, ".spm.toml")
+	if _, err := os.Stat(spmFile); os.IsNotExist(err) {
+		fmt.Println("Project found, but .spm.toml file is missing.")
+		return
+	}
+
+	data, err := os.ReadFile(spmFile)
+	if err != nil {
+		logger.Error("Could not open '"+spmFile+"':", err)
+		return
+	}
+
+	var prj Project // load .spm.toml to a project struct
+	err = toml.Unmarshal(data, &prj)
+	if err != nil {
+		logger.Error("Could not parse '"+spmFile+"':", err)
+		return
+	}
+
+	fmt.Print(prj.Name)
+	if prj.Version != "" {
+		fmt.Print(" (" + prj.Version + ")")
+	}
+	if prj.Favorite {
+		fmt.Print(" ★")
+	}
+	fmt.Print("\n  path: " + path.Dir(spmFile))
+	if prj.Author != "" {
+		fmt.Print("\nAuthor: ", prj.Author)
+	} else {
+		fmt.Print("\nAuthor: <nobody>")
+	}
+	if prj.License != "" {
+		fmt.Print("      License: ", prj.License)
+	} else {
+		fmt.Print("      License: <none>")
+	}
+	if prj.Description != "" {
+		fmt.Print("\n\n" + prj.Description)
+	}
+	if !prj.Created.IsZero() {
+		fmt.Print("\n\nCreated at", prj.Created.Format(time.DateTime))
+	} else {
+		fmt.Print("\n\nCreated at <unknown>")
+	}
+	if !prj.LastOpened.IsZero() {
+		fmt.Print("      Last opened at", prj.LastOpened.Format(time.DateTime))
+	} else {
+		fmt.Print("      Last opened at <unknown>")
 	}
 }
