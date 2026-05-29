@@ -1,5 +1,5 @@
 # SPM -- Simple Project Manager
----
+⚠️ Notice: The project is in early alpha, check TODO for already implemented features
 
 I always struggled with convenient project names and project placement. If I want to develop a minecraft mod or plugin, than I should uniquely name it or create a whole new directory tree: `minecraft/mods/mymod`, since I do many minecraft-related things. So, I came up with a solution - Simple Project Manager. It makes creating, viewing, and showing of project stats very convenient (or should at some point).
 
@@ -11,7 +11,7 @@ I always struggled with convenient project names and project placement. If I wan
 - Show detailed info about project like modification or last opening time
 - Open projects in your default code editor and change your terminal wd
 - Configurable project defaults
-- Configurable scripts!
+- Configurable scripts! (inspired by `npm run`)
 - Basically, cross platform
 - Other ideas accepted!
 
@@ -31,7 +31,45 @@ If you are running the command inside you projects directory (`~/Projects`), you
 
 
 #### List projects
-
 ```bash
 spm list
 ```
+
+Spm will go through your projects folder and parse through found `.spm.toml`. It will list projects' name, description, path tags, favorites and programming language stats! Stats about programming lang is similar lika it is on github - a colorful line, with language percentages listed below. There are only 2 sizes: 100x1 and 50x1.
+
+
+
+
+## TODO
+- [ ] spm init
+  - [x] base functionality
+  - [ ] cla options for setting question answers (--author, --license etc)
+  - [x] tag negation
+- [ ] spm info
+  - [ ] base functionality
+  - [ ] short form
+  - [ ] long form
+  - [ ] format option (like in `date +`)
+  - [ ] language stats
+    - [ ] ignore special non-source code dirs, like deps (`node_modules` etc)
+    - [ ] exclude configs (.json, .toml, .ini etc)
+- [ ] spm list (uses spm info)
+  - [ ] base functionality
+  - [ ] sorting options
+- [ ] spm history
+  - [ ] base functionality
+  - [ ] setup a log file at alls
+- [ ] spm delete
+  - [ ] base functionality
+  - [ ] compress + archive except of delete
+- [ ] spm rename
+  - [ ] base functionality
+- [ ] spm open
+  - [ ] open project in default code editor
+  - [ ] cd into root project dir
+    - [ ] bash function
+    - [ ] zsh function
+    - [ ] fish function
+    - [ ] ps1 function
+- [ ] spm run
+  - [ ] base functionality
