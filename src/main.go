@@ -287,7 +287,7 @@ func projectInfo(cla Args) {
 
 	// check if project folder has spm file and is actual spm project
 	spmFile := path.Join(CONFIG.ProjectsDir, cla.Name, ".spm.toml")
-	if _, err := os.Stat(spmFile); os.IsNotExist(err) {
+	if !fileExists(spmFile) {
 		fmt.Println("Project found, but .spm.toml file is missing.")
 		return
 	}
@@ -304,36 +304,7 @@ func projectInfo(cla Args) {
 		logger.Error("Could not parse '"+spmFile+"':", err)
 		return
 	}
+	prj.Path = path.Join(CONFIG.ProjectsDir, cla.Name)
 
-	fmt.Print(prj.Name)
-	if prj.Version != "" {
-		fmt.Print(" (" + prj.Version + ")")
-	}
-	if prj.Favorite {
-		fmt.Print(" ★")
-	}
-	fmt.Print("\n  path: " + path.Dir(spmFile))
-	if prj.Author != "" {
-		fmt.Print("\nAuthor: ", prj.Author)
-	} else {
-		fmt.Print("\nAuthor: <nobody>")
-	}
-	if prj.License != "" {
-		fmt.Print("      License: ", prj.License)
-	} else {
-		fmt.Print("      License: <none>")
-	}
-	if prj.Description != "" {
-		fmt.Print("\n\n" + prj.Description)
-	}
-	if !prj.Created.IsZero() {
-		fmt.Print("\n\nCreated at", prj.Created.Format(time.DateTime))
-	} else {
-		fmt.Print("\n\nCreated at <unknown>")
-	}
-	if !prj.LastOpened.IsZero() {
-		fmt.Print("      Last opened at", prj.LastOpened.Format(time.DateTime))
-	} else {
-		fmt.Print("      Last opened at <unknown>")
-	}
+	fmt.Println(formatProject(prj))
 }

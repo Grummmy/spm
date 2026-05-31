@@ -12,7 +12,7 @@ var APPDIR string
 var CONFIG Config
 
 type Config struct {
-	Path            string
+	Path            string              `toml:"-"`
 	ProjectsDir     string              `toml:"projects_dir"`
 	Languages       map[string][]string `toml:"languages"`
 	ProjectDefaults Project             `toml:"project_defaults"`

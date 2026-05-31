@@ -23,7 +23,7 @@ var DEFAULT_CONFIG Config = Config{
 		"erlang":      {"erl", "hrl"},
 		"fortran":     {"f", "f90", "f95", "f03"},
 		"fsharp":      {"fs", "fsi", "fsx"},
-		"go":          {"go", "mod", "sum"},
+		"go":          {"go"},
 		"groovy":      {"groovy"},
 		"haskell":     {"hs"},
 		"html":        {"html", "htm"},
