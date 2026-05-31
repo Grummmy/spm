@@ -46,7 +46,8 @@ Spm will go through your projects folder and parse through found `.spm.toml`. It
   - [ ] cla options for setting question answers (--author, --license etc)
   - [x] tag negation
 - [ ] spm info
-  - [ ] base functionality
+  - [x] base functionality
+  - [ ] color
   - [ ] short form
   - [ ] long form
   - [ ] format option (like in `date +%Y/%d/%m`)

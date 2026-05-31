@@ -12,10 +12,10 @@ var APPDIR string
 var CONFIG Config
 
 type Config struct {
-	Path            string              `toml:"-"`
-	ProjectsDir     string              `toml:"projects_dir"`
-	Languages       map[string][]string `toml:"languages"`
-	ProjectDefaults Project             `toml:"project_defaults"`
+	Path            string          `toml:"-"`
+	ProjectsDir     string          `toml:"projects_dir"`
+	Languages       map[string]Lang `toml:"languages"`
+	ProjectDefaults Project         `toml:"project_defaults"`
 }
 
 func checkAppDir() {

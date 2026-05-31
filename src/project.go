@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 	"time"
 )
@@ -23,24 +24,26 @@ func formatProject(prj Project) string {
 	var info strings.Builder
 
 	if prj.Lang != "" {
-		info.WriteString(" [")
+		info.WriteString(" [\x1b[38;5;")
+		info.WriteString(strconv.Itoa(CONFIG.Languages[prj.Lang].Color))
+		info.WriteString("m")
 		info.WriteString(prj.Lang)
-		info.WriteString("] ")
+		info.WriteString("\x1b[0m] ")
 	}
 
 	info.WriteString(prj.Name)
 	if prj.Version != "" {
-		info.WriteString(" (")
+		info.WriteString(" (\x1b[38;5;3m")
 		info.WriteString(prj.Version)
-		info.WriteString(")")
+		info.WriteString("\x1b[0m)")
 	}
 	if prj.Favorite {
 		info.WriteString(" ★")
 	}
 
-	info.WriteString("\n     ")
+	info.WriteString("\n     \x1b[38;5;8m")
 	info.WriteString(prj.Path)
-	info.WriteString("\n")
+	info.WriteString("\n\x1b[0m")
 
 	info.WriteString(toFixed(40, "Author: "+orDefault(prj.Author, "<nobody>"), " ", true, " "))
 
@@ -55,11 +58,12 @@ func formatProject(prj Project) string {
 	info.WriteString("\n\n")
 
 	info.WriteString("Tags: ")
-	info.WriteString(strings.Join(prj.Tags, ", "))
+	info.WriteString(strings.Join(prj.Tags, "\x1b[38;5;8m,\x1b[0m "))
 	info.WriteString("\n")
 
-	info.WriteString(toFixed(40, "Created at "+orDefaultTime(prj.Created, time.DateTime, "<unknown>"), " ", false, " "))
-	info.WriteString(toFixed(40, "Last opened at "+orDefaultTime(prj.LastOpened, time.DateTime, "<unknown>"), " ", false, " "))
+	info.WriteString(toFixed(40, "Created at \x1b[38;5;6m"+orDefaultTime(prj.Created, time.DateTime, "<unknown>"), " ", false, " "))
+	info.WriteString(toFixed(40, "\x1b[0mLast opened at \x1b[38;5;6m"+orDefaultTime(prj.LastOpened, time.DateTime, "<unknown>"), " ", false, " "))
+	info.WriteString("\x1b[0m")
 
 	return info.String()
 }
