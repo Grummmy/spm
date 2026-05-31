@@ -47,7 +47,7 @@ Spm will go through your projects folder and parse through found `.spm.toml`. It
   - [x] tag negation
 - [ ] spm info
   - [x] base functionality
-  - [ ] color
+  - [x] color
   - [ ] short form
   - [ ] long form
   - [ ] format option (like in `date +%Y/%d/%m`)
