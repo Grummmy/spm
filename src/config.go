@@ -12,10 +12,13 @@ var APPDIR string
 var CONFIG Config
 
 type Config struct {
-	Path            string          `toml:"-"`
-	ProjectsDir     string          `toml:"projects_dir"`
-	Languages       map[string]Lang `toml:"languages"`
-	ProjectDefaults Project         `toml:"project_defaults"`
+	Path              string            `toml:"-"`
+	ProjectsDir       string            `toml:"projects_dir"`
+	Languages         map[string]Lang   `toml:"languages,omitempty"`
+	Extentions        map[string]string `toml:"-"`
+	StatsExcludeDirs  Matcher           `toml:"stats_exclude_dirs,omitempty"`
+	StatsExcludeFiles Matcher           `toml:"stats_exclude_files,omitempty"`
+	ProjectDefaults   Project           `toml:"project_defaults"`
 }
 
 func checkAppDir() {
@@ -32,27 +35,42 @@ func checkAppDir() {
 		}
 	}
 
-	configPath := filepath.Join(APPDIR, "config.toml")
-	if fileExists(configPath) {
-		bs, err := os.ReadFile(configPath)
+	CONFIG = loadConfig(filepath.Join(APPDIR, "config.toml"))
+}
+
+func loadConfig(path string) Config {
+	var cfg Config
+	if fileExists(path) {
+		bs, err := os.ReadFile(path)
 		if err != nil {
-			logger.Error("Failed to read config ("+configPath+"):", err)
+			logger.Error("Failed to read config ("+path+"):", err)
 			os.Exit(1)
 		}
 
-		err = toml.Unmarshal(bs, &CONFIG)
+		err = toml.Unmarshal(bs, &cfg)
 		if err != nil {
-			logger.Error("Failed to parse config ("+configPath+"):", err)
+			logger.Error("Failed to parse config ("+path+"):", err)
 			os.Exit(1)
 		}
-		CONFIG.Path = configPath
 	} else {
 		logger.Info("No config found, creating new one with default values.")
 		fillDefaultConfig(&DEFAULT_CONFIG)
 		updateConfig(DEFAULT_CONFIG)
 
-		CONFIG = DEFAULT_CONFIG
+		cfg = DEFAULT_CONFIG
 	}
+
+	if cfg.Extentions == nil {
+		cfg.Extentions = make(map[string]string)
+	}
+	for name, lang := range cfg.Languages {
+		for _, ext := range lang.Ext {
+			cfg.Extentions[ext] = name
+		}
+	}
+
+	cfg.Path = path
+	return cfg
 }
 
 func updateConfig(new Config) {

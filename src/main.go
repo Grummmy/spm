@@ -314,5 +314,16 @@ func projectInfo(cla Args) int {
 	prj.Path = path.Join(CONFIG.ProjectsDir, cla.Name)
 
 	fmt.Println(formatProject(prj))
+
+	var stats map[string]int
+	if cla.NoExceptions {
+		stats = getLangStats(prj.Path, Matcher{}, Matcher{}, nil, cla.Lines)
+	} else {
+		stats = getLangStats(prj.Path, CONFIG.StatsExcludeDirs, CONFIG.StatsExcludeFiles, nil, cla.Lines)
+	}
+
+	logger.Debug(stats)
+	fmt.Println(langStatLine(stats, 100))
+
 	return 0
 }

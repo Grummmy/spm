@@ -1,9 +1,15 @@
 package main
 
 import (
+	"maps"
+	"math"
+	"os"
+	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type Project struct {
@@ -67,4 +73,70 @@ func formatProject(prj Project) string {
 	info.WriteString("\x1b[0m")
 
 	return info.String()
+}
+
+// eDirs - excluded dirs; eFiles - excluded eFiles
+// separated for hight checking speed
+func getLangStats(path string, eDirs Matcher, eFiles Matcher, result map[string]int, lines bool) map[string]int {
+	if result == nil {
+		result = make(map[string]int)
+	}
+
+	files, err := os.ReadDir(path)
+	if err != nil {
+		logger.Error("Could not read dir '"+path+"':", err)
+		return result
+	}
+
+	for _, f := range files {
+		name := strings.ToLower(f.Name())
+		var ext string
+
+		if !f.IsDir() {
+			ext = name[strings.LastIndex(name, ".")+1:]
+			if !slices.Contains(slices.Collect(maps.Keys(CONFIG.Extentions)), ext) {
+				continue
+			}
+
+			result[ext] += countFile(filepath.Join(path, name), lines)
+			continue
+		}
+		result = getLangStats(filepath.Join(path, name), eDirs, eFiles, result, lines)
+	}
+
+	return result
+}
+
+func countFile(path string, lines bool) int {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		logger.Error("Could not open file '"+path+"':", err)
+		return 0
+	}
+
+	if lines {
+		return strings.Count(string(data), "\n")
+	}
+	return utf8.RuneCount(data)
+}
+
+func langStatLine(stats map[string]int, length int) string {
+	total := 0
+	for _, n := range stats {
+		total += n
+	}
+
+	var line strings.Builder
+	for lang, amount := range stats {
+		n := float64(float32(amount) / float32(total) * float32(length))
+		logger.Debug(lang, amount, n)
+
+		line.WriteString("\x1b[48;5;")
+		line.WriteString(strconv.Itoa(CONFIG.Languages[lang].Color))
+		line.WriteString("m")
+		line.WriteString(strings.Repeat(" ", int(math.Round(n))))
+	}
+
+	line.WriteString("\x1b[0m")
+	return line.String()
 }

@@ -11,13 +11,10 @@ type Args struct {
 	Command      string
 	Name         string
 	Description  string
-	Lang         string
-	Tags         []string
-	Path         string
 	Mkdir        bool
 	Sort         string
 	Des          bool
-	CountLines   bool
+	Lines        bool
 	NoExceptions bool
 	Reason       string
 	Confirm      bool
@@ -58,9 +55,6 @@ func getArgs() Args {
 			fmt.Println("Usage: spm init [name]")
 			flag.PrintDefaults()
 		}
-		lang := flag.StringP("lang", "l", "", "programming language that project mainly relies on")
-		tags := flag.StringSliceP("tag", "t", nil, "project tags")
-		path := flag.StringP("path", "p", "", "project directory path")
 		mkdir := flag.BoolP("mkdir", "m", false, "whether to create new dir for a project or use currnet")
 		flag.Parse()
 
@@ -69,7 +63,7 @@ func getArgs() Args {
 			cla.Name = args[1]
 		}
 
-		cla.Lang, cla.Tags, cla.Path, cla.Mkdir = *lang, *tags, *path, *mkdir
+		cla.Mkdir = *mkdir
 
 	case "list":
 		flag.Usage = func() {
@@ -79,11 +73,11 @@ func getArgs() Args {
 		}
 		sort := flag.StringP("sort", "s", "opened", "sort projects by: date (creation date), lang, opened (last opened)")
 		des := flag.Bool("des", false, "change sorting order to descending (default ascending)")
-		countLines := flag.BoolP("lines", "L", false, "count lang use statistics by lines instead of characters")
+		lines := flag.BoolP("lines", "L", false, "count lang stats by lines except of characters")
 		noExceptions := flag.BoolP("no-exceptions", "N", false, "dont exclude non-source code files when counting lang statistics")
 		flag.Parse()
 
-		cla.Sort, cla.Des, cla.CountLines, cla.NoExceptions = *sort, *des, *countLines, *noExceptions
+		cla.Sort, cla.Des, cla.Lines, cla.NoExceptions = *sort, *des, *lines, *noExceptions
 
 	case "delete":
 		flag.Usage = func() {
@@ -102,6 +96,7 @@ func getArgs() Args {
 		} else if len(args) == 2 {
 			cla.Name = args[1]
 		}
+
 		cla.Confirm, cla.Permanent = *confirm, *permanent
 
 	case "history":
@@ -121,12 +116,16 @@ func getArgs() Args {
 			fmt.Println("Usage: spm info <name>")
 			flag.PrintDefaults()
 		}
+		lines := flag.BoolP("lines", "L", false, "count lang stats by lines except of characters")
+		noExceptions := flag.BoolP("no-exceptions", "N", false, "dont exclude non-source code files when counting lang statistics")
 		flag.Parse()
 
 		args := flag.Args()
 		if len(args) >= 2 { // skip first one, because its a subcommand
 			cla.Name = args[1]
 		}
+
+		cla.Lines, cla.NoExceptions = *lines, *noExceptions
 
 	case "open":
 		flag.Usage = func() {
