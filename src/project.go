@@ -38,14 +38,15 @@ func formatProject(prj Project) string {
 		info.WriteString("\x1b[0m)")
 	}
 	if prj.Favorite {
-		info.WriteString(" ★")
+		info.WriteString(" \x1b[38;5;5m\x1b[1m⬤ fav\x1b[0m")
 	}
 
 	info.WriteString("\n     \x1b[38;5;8m")
 	info.WriteString(prj.Path)
 	info.WriteString("\n\x1b[0m")
 
-	info.WriteString(toFixed(40, "Author: "+orDefault(prj.Author, "<nobody>"), " ", true, " "))
+	info.WriteString(toFixed(40, "Author: \x1b[38;5;2m\x1b[1m"+orDefault(prj.Author, "<nobody>"), " ", true, " "))
+	info.WriteString("\x1b[0m")
 
 	info.WriteString("License: ")
 	info.WriteString(orDefault(prj.License, "<none>"))

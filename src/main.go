@@ -23,26 +23,31 @@ func init() {
 
 func main() {
 	cla := getArgs()
+	status := 0
 
 	switch cla.Command {
 	case "init":
 		if CONFIG.ProjectsDir == "" {
 			logger.Fatal("You cant use init without projects dir specified in config.")
+			status = 78
 			break
 		}
 		initProject(cla)
 	case "info":
 		if CONFIG.ProjectsDir == "" {
 			logger.Fatal("You cant use info without projects dir specified in config.")
+			status = 78
 			break
 		}
-		projectInfo(cla)
+
+		status = projectInfo(cla)
 	}
 
 	updateConfig(CONFIG)
+	os.Exit(status)
 }
 
-func initProject(cla Args) {
+func initProject(cla Args) int {
 	var prj Project
 	def := CONFIG.ProjectDefaults
 
@@ -75,7 +80,7 @@ func initProject(cla Args) {
 		scan, err := line.Prompt(prompt)
 		if err != nil && err != liner.ErrPromptAborted {
 			fmt.Println("\nAborting.")
-			return
+			return 130
 		}
 		scan = strings.TrimSpace(scan)
 
@@ -100,7 +105,7 @@ func initProject(cla Args) {
 	scan, err := line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
-		return
+		return 130
 	}
 	scan = strings.TrimSpace(scan)
 
@@ -122,7 +127,7 @@ func initProject(cla Args) {
 	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
-		return
+		return 130
 	}
 	scan = strings.TrimSpace(scan)
 
@@ -144,7 +149,7 @@ func initProject(cla Args) {
 	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
-		return
+		return 130
 	}
 	scan = strings.TrimSpace(scan)
 
@@ -166,7 +171,7 @@ func initProject(cla Args) {
 	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
-		return
+		return 130
 	}
 	scan = strings.TrimSpace(scan)
 
@@ -188,7 +193,7 @@ func initProject(cla Args) {
 	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
-		return
+		return 130
 	}
 	scan = strings.TrimSpace(scan)
 
@@ -210,7 +215,7 @@ func initProject(cla Args) {
 	scan, err = line.Prompt(prompt)
 	if err != nil && err != liner.ErrPromptAborted {
 		fmt.Println("\nAborting.")
-		return
+		return 130
 	}
 	scan = strings.TrimSpace(scan)
 
@@ -248,7 +253,7 @@ func initProject(cla Args) {
 		prj.Path, err = os.Getwd()
 		if err != nil { // get wd to know where the project is
 			logger.Error("Could not get wd:", err)
-			return
+			return 1
 		}
 
 		if cla.Mkdir { // if mkdir, then add project name to the path
@@ -258,7 +263,7 @@ func initProject(cla Args) {
 		// create dir if doesnt exist
 		if err := os.MkdirAll(prj.Path, 0755); err != nil {
 			logger.Error("Could not create directory '"+prj.Path+"':", err)
-			return
+			return 1
 		}
 
 		if err := os.WriteFile(path.Join(prj.Path, ".spm.toml"), data, 0655); err != nil {
@@ -269,42 +274,45 @@ func initProject(cla Args) {
 	} else {
 		fmt.Println("Project wasn't created.")
 	}
+
+	return 0
 }
 
-func projectInfo(cla Args) {
+func projectInfo(cla Args) int {
 	// get files from project dir
 	files, err := os.ReadDir(CONFIG.ProjectsDir)
 	if err != nil {
 		logger.Error("Could not read projects dir:", err)
-		return
+		return 1
 	}
 
 	// check if there is a folder with project name in projects dir
 	if !slices.ContainsFunc(files, func(e os.DirEntry) bool { return e.IsDir() && e.Name() == cla.Name }) || os.IsNotExist(err) {
 		fmt.Println("No project named '" + cla.Name + "' found in '" + CONFIG.ProjectsDir + "/'.")
-		return
+		return 2
 	}
 
 	// check if project folder has spm file and is actual spm project
 	spmFile := path.Join(CONFIG.ProjectsDir, cla.Name, ".spm.toml")
 	if !fileExists(spmFile) {
 		fmt.Println("Project found, but .spm.toml file is missing.")
-		return
+		return 66
 	}
 
 	data, err := os.ReadFile(spmFile)
 	if err != nil {
 		logger.Error("Could not open '"+spmFile+"':", err)
-		return
+		return 1
 	}
 
 	var prj Project // load .spm.toml to a project struct
 	err = toml.Unmarshal(data, &prj)
 	if err != nil {
 		logger.Error("Could not parse '"+spmFile+"':", err)
-		return
+		return 65
 	}
 	prj.Path = path.Join(CONFIG.ProjectsDir, cla.Name)
 
 	fmt.Println(formatProject(prj))
+	return 0
 }
