@@ -23,7 +23,7 @@ type Config struct {
 
 func checkAppDir() {
 	if os.Getenv("SPM_RUN_PORTABLE") != "" {
-		logger.Debug("Running in portable mode")
+		logger.Info("Running in portable mode")
 		APPDIR = exeDir()
 	} else if dir, err := os.UserConfigDir(); err != nil {
 		logger.Error("Failed to get user config dir:", err)

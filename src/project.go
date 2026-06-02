@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -94,14 +95,18 @@ func getLangStats(path string, eDirs Matcher, eFiles Matcher, result map[string]
 
 		if !f.IsDir() {
 			ext = name[strings.LastIndex(name, ".")+1:]
-			if !slices.Contains(slices.Collect(maps.Keys(CONFIG.Extentions)), ext) {
+			if !slices.Contains(slices.Collect(maps.Keys(CONFIG.Extentions)), ext) || eFiles.Match(name) {
 				continue
 			}
 
-			result[ext] += countFile(filepath.Join(path, name), lines)
+			result[ext] += countFile(filepath.Join(path, f.Name()), lines)
 			continue
 		}
-		result = getLangStats(filepath.Join(path, name), eDirs, eFiles, result, lines)
+
+		if eDirs.Match(name) {
+			continue
+		}
+		result = getLangStats(filepath.Join(path, f.Name()), eDirs, eFiles, result, lines)
 	}
 
 	return result
@@ -126,17 +131,35 @@ func langStatLine(stats map[string]int, length int) string {
 		total += n
 	}
 
+	// sort keys by their values in stats
+	keys := slices.Collect(maps.Keys(stats))
+	sort.SliceStable(keys, func(i, j int) bool {
+		return stats[keys[i]] > stats[keys[j]]
+	})
+
 	var line strings.Builder
-	for lang, amount := range stats {
-		n := float64(float32(amount) / float32(total) * float32(length))
-		logger.Debug(lang, amount, n)
+	var desc strings.Builder
+	for _, lang := range keys {
+		p := float64(stats[lang]) / float64(total)
+		n := p * float64(length)
+		logger.Debugf("%v of %v is %v%%\n", stats[lang], lang, n)
 
 		line.WriteString("\x1b[48;5;")
-		line.WriteString(strconv.Itoa(CONFIG.Languages[lang].Color))
+		line.WriteString(strconv.Itoa(CONFIG.Languages[CONFIG.Extentions[lang]].Color))
 		line.WriteString("m")
 		line.WriteString(strings.Repeat(" ", int(math.Round(n))))
+
+		desc.WriteString(" ")
+		desc.WriteString(strconv.FormatFloat(p*100, 'f', 1, 64))
+		desc.WriteString("% ")
+		desc.WriteString("\x1b[38;5;")
+		desc.WriteString(strconv.Itoa(CONFIG.Languages[CONFIG.Extentions[lang]].Color))
+		desc.WriteString("m")
+		desc.WriteString(CONFIG.Languages[CONFIG.Extentions[lang]].Name)
+		desc.WriteString("\x1b[0m  ")
 	}
 
-	line.WriteString("\x1b[0m")
-	return line.String()
+	line.WriteString("\x1b[0m\n")
+
+	return line.String() + desc.String()
 }
