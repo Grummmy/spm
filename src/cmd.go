@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	flag "github.com/spf13/pflag"
 )
@@ -16,6 +17,7 @@ type Args struct {
 	Des          bool
 	Lines        bool
 	NoExceptions bool
+	NoStats      bool
 	Reason       string
 	Confirm      bool
 	Permanent    bool
@@ -60,7 +62,7 @@ func getArgs() Args {
 
 		args := flag.Args()
 		if len(args) >= 2 { // skip first one, because its a subcommand
-			cla.Name = args[1]
+			cla.Name = strings.Join(args[1:], " ")
 		}
 
 		cla.Mkdir = *mkdir
@@ -118,14 +120,15 @@ func getArgs() Args {
 		}
 		lines := flag.BoolP("lines", "L", false, "count lang stats by lines except of characters")
 		noExceptions := flag.BoolP("no-exceptions", "N", false, "dont exclude non-source code files when counting lang statistics")
+		noStats := flag.BoolP("no-stats", "S", false, "dont show programming lang stats bar")
 		flag.Parse()
 
 		args := flag.Args()
 		if len(args) >= 2 { // skip first one, because its a subcommand
-			cla.Name = args[1]
+			cla.Name = strings.Join(args[1:], " ")
 		}
 
-		cla.Lines, cla.NoExceptions = *lines, *noExceptions
+		cla.Lines, cla.NoExceptions, cla.NoStats = *lines, *noExceptions, *noStats
 
 	case "open":
 		flag.Usage = func() {

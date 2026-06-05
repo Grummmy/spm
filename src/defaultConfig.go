@@ -4,7 +4,7 @@ import (
 	"os/user"
 )
 
-var DEFAULT_CONFIG Config = Config{
+var defaultConfig Config = Config{
 	Languages: map[string]Lang{
 		"ada":         {Name: "Ada", Ext: []string{"adb", "ads"}, Color: 178},
 		"assembly":    {Name: "Assembly", Ext: []string{"asm", "s"}, Color: 244},
@@ -114,6 +114,8 @@ var DEFAULT_CONFIG Config = Config{
 			// Python
 			"pipfile.lock", "poetry.lock", "uv.lock",
 			"requirements.txt",
+			// spm conf
+			".spm.toml",
 		},
 	},
 	ProjectDefaults: Project{

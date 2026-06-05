@@ -69,7 +69,7 @@ func initProject(cla Args) int {
 		if cla.Name != "" { // if name was passed as argument when calling 'spm init'
 			prompt = "Project name (" + cla.Name + "): "
 			def.Name = cla.Name
-		} else if cwd != "" { // if no name was passed, but cwd is available
+		} else if !cla.Mkdir && cwd != "" { // if no name was passed, but cwd is available
 			prompt = "Project name (" + filepath.Base(cwd) + "): "
 			def.Name = filepath.Base(cwd)
 		} else if def.Name != "" { // if cwd isnt available, but default name is set in config
@@ -237,7 +237,7 @@ func initProject(cla Args) int {
 	}
 	// <<-- get tags -----------------------
 
-	fmt.Println("\nAbout to write to " + filepath.Join(cwd, ".spm.toml") + ":")
+	fmt.Println("\nAbout to write to " + filepath.Join(cwd, normalizeName(cla.Name), ".spm.toml") + ":")
 	data, err := toml.Marshal(prj)
 	if err != nil {
 		logger.Error("Failed to marshal project:", err)
@@ -257,16 +257,16 @@ func initProject(cla Args) int {
 		}
 
 		if cla.Mkdir { // if mkdir, then add project name to the path
-			prj.Path = path.Join(prj.Path, prj.Name)
+			prj.Path = path.Join(prj.Path, normalizeName(prj.Name))
 		}
 
 		// create dir if doesnt exist
-		if err := os.MkdirAll(prj.Path, 0755); err != nil {
+		if err := os.MkdirAll(prj.Path, 0o755); err != nil {
 			logger.Error("Could not create directory '"+prj.Path+"':", err)
 			return 1
 		}
 
-		if err := os.WriteFile(path.Join(prj.Path, ".spm.toml"), data, 0655); err != nil {
+		if err := os.WriteFile(path.Join(prj.Path, ".spm.toml"), data, 0o655); err != nil {
 			logger.Error("Could not create file '"+path.Join(prj.Path, ".spm.toml")+"':", err)
 		} else {
 			logger.Debug("Successfully wrote '" + path.Join(prj.Path, ".spm.toml") + "'")
@@ -286,6 +286,7 @@ func projectInfo(cla Args) int {
 		return 1
 	}
 
+	cla.Name = normalizeName(cla.Name)
 	// check if there is a folder with project name in projects dir
 	if !slices.ContainsFunc(files, func(e os.DirEntry) bool { return e.IsDir() && e.Name() == cla.Name }) || os.IsNotExist(err) {
 		fmt.Println("No project named '" + cla.Name + "' found in '" + CONFIG.ProjectsDir + "/'.")
@@ -315,15 +316,22 @@ func projectInfo(cla Args) int {
 
 	fmt.Println(formatProject(prj))
 
-	var stats map[string]int
-	if cla.NoExceptions {
-		stats = getLangStats(prj.Path, Matcher{}, Matcher{}, nil, cla.Lines)
-	} else {
-		stats = getLangStats(prj.Path, CONFIG.StatsExcludeDirs, CONFIG.StatsExcludeFiles, nil, cla.Lines)
-	}
+	if !cla.NoStats {
+		var stats map[string]int
+		if cla.NoExceptions {
+			stats = getLangStats(prj.Path, Matcher{}, Matcher{}, nil, cla.Lines)
+		} else {
+			stats = getLangStats(prj.Path, CONFIG.StatsExcludeDirs, CONFIG.StatsExcludeFiles, nil, cla.Lines)
+		}
 
-	logger.Debug(stats)
-	fmt.Println(langStatLine(stats, 100))
+		logger.Debug(stats)
+		langStats := langStatLine(stats, 100)
+		if langStats == "\x1b[0m" || langStats == "" {
+			fmt.Println("\nNo source code files.")
+		} else {
+			fmt.Println("\n" + langStats)
+		}
+	}
 
 	return 0
 }

@@ -27,6 +27,21 @@ type Project struct {
 	Favorite    bool      `toml:"favorite,omitempty"`
 }
 
+// noramlize name to kebab-case
+func normalizeName(name string) string {
+	var result strings.Builder
+
+	for i := range name {
+		if name[i] == ' ' || name[i] == '_' || name[i] == '-' {
+			result.WriteString("-")
+		} else {
+			result.WriteByte(name[i])
+		}
+	}
+
+	return result.String()
+}
+
 func formatProject(prj Project) string {
 	var info strings.Builder
 
@@ -52,7 +67,7 @@ func formatProject(prj Project) string {
 	info.WriteString(prj.Path)
 	info.WriteString("\n\x1b[0m")
 
-	info.WriteString(toFixed(40, "Author: \x1b[38;5;2m\x1b[1m"+orDefault(prj.Author, "<nobody>"), " ", true, " "))
+	info.WriteString(toFixed(40, "Author: \x1b[38;5;10m\x1b[1m"+orDefault(prj.Author, "<nobody>"), " ", true, " "))
 	info.WriteString("\x1b[0m")
 
 	info.WriteString("License: ")
@@ -76,8 +91,8 @@ func formatProject(prj Project) string {
 	return info.String()
 }
 
-// eDirs - excluded dirs; eFiles - excluded eFiles
-// separated for hight checking speed
+// eDirs - excluded dirs; eFiles - excluded eFiles.
+// separated for higher checking speed
 func getLangStats(path string, eDirs Matcher, eFiles Matcher, result map[string]int, lines bool) map[string]int {
 	if result == nil {
 		result = make(map[string]int)
@@ -161,5 +176,5 @@ func langStatLine(stats map[string]int, length int) string {
 
 	line.WriteString("\x1b[0m\n")
 
-	return line.String() + desc.String()
+	return strings.TrimSpace(line.String() + desc.String())
 }

@@ -8,8 +8,10 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-var APPDIR string
-var CONFIG Config
+var (
+	APPDIR string
+	CONFIG Config
+)
 
 type Config struct {
 	Path              string            `toml:"-"`
@@ -30,7 +32,7 @@ func checkAppDir() {
 		APPDIR = exeDir()
 	} else {
 		APPDIR = filepath.Join(dir, "spm")
-		if err := os.Mkdir(APPDIR, 0755); err != nil && !os.IsExist(err) {
+		if err := os.Mkdir(APPDIR, 0o755); err != nil && !os.IsExist(err) {
 			logger.Error("Failed to create app directory ("+APPDIR+"):", err)
 		}
 	}
@@ -54,10 +56,10 @@ func loadConfig(path string) Config {
 		}
 	} else {
 		logger.Info("No config found, creating new one with default values.")
-		fillDefaultConfig(&DEFAULT_CONFIG)
-		updateConfig(DEFAULT_CONFIG)
+		fillDefaultConfig(&defaultConfig)
+		updateConfig(defaultConfig)
 
-		cfg = DEFAULT_CONFIG
+		cfg = defaultConfig
 	}
 
 	if cfg.Extentions == nil {
@@ -81,7 +83,7 @@ func updateConfig(new Config) {
 	}
 
 	configPath := filepath.Join(APPDIR, "config.toml")
-	err = os.WriteFile(configPath, data, 0755)
+	err = os.WriteFile(configPath, data, 0o755)
 	if err != nil {
 		logger.Error("Failed to write config ("+configPath+"):", err)
 	}
